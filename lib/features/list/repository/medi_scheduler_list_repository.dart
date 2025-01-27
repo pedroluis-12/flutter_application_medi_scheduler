@@ -1,21 +1,23 @@
-import '../model/medi_scheduler_list_model.dart';
+import '../../../commons/model/medi_scheduler_model.dart';
+import '../../../commons/service/medi_scheduler_database_helper.dart';
+import 'mapper/medi_scheduler_list_repository_mapper.dart';
 
 class MediSchedulerListRepository {
+  final _databaseHelper = MediSchedulerDatabaseHelper.instance;
+  final _mapper = MediSchedulerListRepositoryMapper();
 
-  Future<List<MediSchedulerListModel>> getList() async {
-    final List<MediSchedulerListModel> mediSchedulerList = await <MediSchedulerListModel>[
-      MediSchedulerListModel(title: 'Medicine 1', subTitle: 'Time: 8:00 AM'),
-      MediSchedulerListModel(title: 'Medicine 2', subTitle: 'Time: 8:00 AM'),
-      MediSchedulerListModel(title: 'Medicine 3', subTitle: 'Time: 8:00 AM'),
-      MediSchedulerListModel(title: 'Medicine 4', subTitle: 'Time: 8:00 AM'),
-      MediSchedulerListModel(title: 'Medicine 5', subTitle: 'Time: 8:00 AM'),
-      MediSchedulerListModel(title: 'Medicine 6', subTitle: 'Time: 8:00 AM'),
-      MediSchedulerListModel(title: 'Medicine 7', subTitle: 'Time: 8:00 AM'),
-      MediSchedulerListModel(title: 'Medicine 8', subTitle: 'Time: 8:00 AM'),
-      MediSchedulerListModel(title: 'Medicine 9', subTitle: 'Time: 8:00 AM'),
-      MediSchedulerListModel(title: 'Medicine 10', subTitle: 'Time: 8:00 AM'),
-    ];
+  Future<List<MediSchedulerModel>> getList() async {
+    final db = await _databaseHelper.database;
+    final result = await db.query(MediSchedulerDatabaseHelper.tableMedicines,
+        orderBy: '${MediSchedulerDatabaseHelper.colId} ASC');
 
-    return mediSchedulerList;
+    return _mapper.convertMapToModel(result);
+  }
+
+  Future<void> delete(int id) async {
+    final db = await _databaseHelper.database;
+
+    await db.delete(MediSchedulerDatabaseHelper.tableMedicines,
+        where: "${MediSchedulerDatabaseHelper.colId} = ?", whereArgs: [id]);
   }
 }

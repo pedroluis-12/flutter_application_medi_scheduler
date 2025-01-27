@@ -1,19 +1,36 @@
 import 'package:flutter/widgets.dart';
+
 import '../repository/medi_scheduler_list_repository.dart';
-import '../model/medi_scheduler_list_model.dart';
+import '../../../commons/model/medi_scheduler_model.dart';
 
 class MediSchedulerListViewModel extends ChangeNotifier {
-  final MediSchedulerListRepository _mediSchedulerListRepository = MediSchedulerListRepository();
+  final MediSchedulerListRepository _mediSchedulerListRepository =
+      MediSchedulerListRepository();
 
   bool fetchingData = false;
-  
-  List<MediSchedulerListModel> _mediSchedulerList = [];
-  List<MediSchedulerListModel> get mediSchedulerList => _mediSchedulerList;
+
+  List<MediSchedulerModel> _mediSchedulerList = [];
+  List<MediSchedulerModel> get mediSchedulerList => _mediSchedulerList;
 
   Future<void> getList() async {
     fetchingData = true;
-    _mediSchedulerList = await _mediSchedulerListRepository.getList();
+    try {
+      _mediSchedulerList = await _mediSchedulerListRepository.getList();
+
+      notifyListeners();
+    } catch (e) {
+      print(e);
+    }
     fetchingData = false;
-    notifyListeners();
   }
-} 
+
+  Future<void> delete(int id) async {
+    try {
+      await _mediSchedulerListRepository.delete(id);
+      _mediSchedulerList.removeWhere((element) => element.id == id);
+      notifyListeners();
+    } catch (e) {
+      print(e);
+    }
+  }
+}
