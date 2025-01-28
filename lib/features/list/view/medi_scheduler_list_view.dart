@@ -146,7 +146,7 @@ class Dialog {
                 style: ButtonStyle(
                     backgroundColor: WidgetStateProperty.all(Colors.lightBlue)),
                 onPressed: () {
-                  viewModel.delete(id!);
+                  viewModel.delete(id);
                   Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
                     content: Text("Remédio removido com sucesso",
