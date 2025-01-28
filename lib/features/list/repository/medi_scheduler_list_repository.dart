@@ -20,4 +20,9 @@ class MediSchedulerListRepository {
     await db.delete(MediSchedulerDatabaseHelper.tableMedicines,
         where: "${MediSchedulerDatabaseHelper.colId} = ?", whereArgs: [id]);
   }
+
+  Future<void> close() async {
+    final db = await _databaseHelper.database;
+    await db.close();
+  }
 }

@@ -33,4 +33,8 @@ class MediSchedulerListViewModel extends ChangeNotifier {
       print(e);
     }
   }
+
+  Future<void> close() async {
+    await _mediSchedulerListRepository.close();
+  } 
 }

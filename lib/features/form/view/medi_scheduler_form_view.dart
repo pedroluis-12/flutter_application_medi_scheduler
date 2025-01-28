@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_medi_scheduler/commons/model/medi_scheduler_model.dart';
 import 'package:provider/provider.dart';
 
+import '../../../commons/helper/medi_scheduler_helper.dart';
 import '../viewmodel/medi_scheduler_form_viewmodel.dart';
 
 class MediSchedulerFormView extends StatefulWidget {
-  const MediSchedulerFormView({super.key});
+  const MediSchedulerFormView({super.key, this.medicineModel});
+
+  final MediSchedulerModel? medicineModel;
 
   @override
   MediSchedulerFormViewState createState() => MediSchedulerFormViewState();
@@ -12,15 +16,110 @@ class MediSchedulerFormView extends StatefulWidget {
 
 class MediSchedulerFormViewState extends State<MediSchedulerFormView> {
   final _formKey = GlobalKey<FormState>();
-  final _titleController = TextEditingController();
+  final _medicineNameController = TextEditingController();
+  final _timeController = TextEditingController();
   final _detailController = TextEditingController();
+
+  bool _isNewForm = false;
+  late final MediSchedulerFormViewmodel _formViewModel;
+
+  _setFormType() {
+    if (widget.medicineModel == null) {
+      setState(() {
+        _isNewForm = true;
+      });
+    } else {
+      _medicineNameController.text = widget.medicineModel!.medicineName!;
+      _timeController.text = widget.medicineModel!.time!;
+      _detailController.text = widget.medicineModel!.description!;
+    }
+  }
+
+  _initViewModel() {
+    _formViewModel =
+        Provider.of<MediSchedulerFormViewmodel>(context, listen: false);
+  }
+
+  _saveForm() {
+    if (_formKey.currentState != null && _formKey.currentState!.validate()) {
+      _formKey.currentState?.save();
+
+      _formViewModel.saveForm(capitalizeWords(_medicineNameController.text),
+          _timeController.text, _detailController.text);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Remédio salvo com sucesso',
+              style:
+                  TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          backgroundColor: Colors.green,
+        ),
+      );
+      Navigator.pop(context);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Digite todos os campos obrigatórios',
+              style:
+                  TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  _updateForm() {
+    if (_formKey.currentState != null && _formKey.currentState!.validate()) {
+      _formKey.currentState?.save();
+
+      _formViewModel.updateForm(
+          widget.medicineModel!.id!,
+          capitalizeWords(_medicineNameController.text),
+          _timeController.text,
+          _detailController.text);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Remédio atualizado com sucesso',
+              style:
+                  TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          backgroundColor: Colors.green,
+        ),
+      );
+      Navigator.pop(context);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Digite todos os campos obrigatórios',
+              style:
+                  TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  @override
+  void initState() {
+    _setFormType();
+    _initViewModel();
+
+    super.initState();
+  }
+
+  @override
+  dispose() {
+    _formViewModel.close();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: const Text('Adicionar Medicamento',
-              style: TextStyle(color: Colors.white)),
+          title: Text(
+              _isNewForm ? 'Adicionar Medicamento' : 'Editar Medicamento',
+              style: const TextStyle(color: Colors.white)),
           backgroundColor: Colors.lightBlue,
           iconTheme: const IconThemeData(color: Colors.white),
         ),
@@ -33,10 +132,10 @@ class MediSchedulerFormViewState extends State<MediSchedulerFormView> {
               child: Column(
                 children: [
                   TextFormField(
-                    controller: _titleController,
+                    controller: _medicineNameController,
                     decoration: const InputDecoration(
-                      hintText: "Enter the title",
-                      labelText: 'title',
+                      hintText: "Digite o nome do remédio",
+                      labelText: 'Remédio',
                       border: OutlineInputBorder(
                           borderSide: BorderSide(
                             color: Colors.white,
@@ -46,19 +145,15 @@ class MediSchedulerFormViewState extends State<MediSchedulerFormView> {
                             Radius.circular(10.0),
                           )),
                     ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter a title';
-                      }
-                      return null;
-                    },
+                    validator: (value) => _validateText(
+                        value, 'Por favor, digite o nome do remédio'),
                   ),
                   const SizedBox(height: 20),
                   TextFormField(
-                    controller: _detailController,
+                    controller: _timeController,
                     decoration: const InputDecoration(
-                        hintText: "Enter the description",
-                        labelText: 'Description',
+                        hintText: "Digite o horário",
+                        labelText: 'Horário',
                         border: OutlineInputBorder(
                             borderSide: BorderSide(
                               color: Colors.white,
@@ -67,12 +162,36 @@ class MediSchedulerFormViewState extends State<MediSchedulerFormView> {
                             borderRadius: BorderRadius.all(
                               Radius.circular(10.0),
                             ))),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter a description';
+                    validator: (value) =>
+                        _validateText(value, 'Por favor, digite o horário'),
+                    onTap: () => showTimePicker(
+                      helpText: 'Selecionar horário',
+                      confirmText: 'Confirmar',
+                      cancelText: 'Cancelar',
+                      context: context,
+                      initialTime: TimeOfDay.now(),
+                    ).then((time) {
+                      if (time != null) {
+                        _timeController.text = time.format(context);
                       }
-                      return null;
-                    },
+                    }),
+                  ),
+                  const SizedBox(height: 20),
+                  TextFormField(
+                    controller: _detailController,
+                    decoration: const InputDecoration(
+                        hintText: "Digite a descrição",
+                        labelText: 'Descrição',
+                        border: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              color: Colors.white,
+                              width: 0.75,
+                            ),
+                            borderRadius: BorderRadius.all(
+                              Radius.circular(10.0),
+                            ))),
+                    keyboardType: TextInputType.multiline,
+                    maxLines: 3,
                   ),
                   const SizedBox(height: 20),
                   Container(
@@ -86,10 +205,11 @@ class MediSchedulerFormViewState extends State<MediSchedulerFormView> {
                           ),
                           padding: const EdgeInsets.all(20),
                         ),
-                        onPressed: () => _saveForm(viewModel),
-                        child: const Text('Salvar',
-                            style:
-                                TextStyle(fontSize: 16, color: Colors.white)),
+                        onPressed: () =>
+                            _isNewForm ? _saveForm() : _updateForm(),
+                        child: Text(_isNewForm ? 'Salvar' : 'Atualizar',
+                            style: const TextStyle(
+                                fontSize: 16, color: Colors.white)),
                       )),
                 ],
               ),
@@ -98,16 +218,10 @@ class MediSchedulerFormViewState extends State<MediSchedulerFormView> {
         }));
   }
 
-  _saveForm(MediSchedulerFormViewmodel viewModelObservable) {
-    Provider.of<MediSchedulerFormViewmodel>(context, listen: false)
-        .saveForm(_titleController.text, _detailController.text);
-        
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Remédio salvo com sucesso'),
-          backgroundColor: Colors.greenAccent,
-        ),
-      );
-      Navigator.pop(context);
+  String? _validateText(String? value, String messageError) {
+    if (value == null || value.isEmpty) {
+      return messageError;
+    }
+    return null;
   }
 }

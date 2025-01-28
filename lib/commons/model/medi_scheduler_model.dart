@@ -1,7 +1,8 @@
 class MediSchedulerModel {
   int? id; 
-  String? title;
+  String? medicineName;
+  String? time;
   String? description;
 
-  MediSchedulerModel(this.title, this.description, {this.id});
+  MediSchedulerModel(this.medicineName, this.time, this.description, {this.id});
 }

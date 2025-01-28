@@ -4,7 +4,8 @@ class MediSchedulerFormRepositoryMapper {
 
    Map<String, dynamic> convertModelToMap(MediSchedulerModel model) {
     return {
-      'title': model.title,
+      'medicineName': model.medicineName,
+      'time': model.time,
       'description': model.description,
     };
   }

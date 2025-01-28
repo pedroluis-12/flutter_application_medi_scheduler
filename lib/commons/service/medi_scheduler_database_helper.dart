@@ -17,32 +17,40 @@ class MediSchedulerDatabaseHelper {
   static const String tableMedicines = 'medicines';
 
   static const String colId = 'id';
-  static const String colTitle = 'title';
+  static const String colMedicineName = 'medicineName';
+  static const String colTime = 'time';
   static const String colDescription = 'description';
+
 
   Future<Database> get database async {
     if (_database != null) {
-      return _database!;
+       _database = await _initDatabase();
+    } else {
+      _database = await _createDatabase();
     }
-    _database = await _initDatabase();
 
     return _database!;
   }
 
   _initDatabase() async {
     Directory documentsDirectory = await getApplicationDocumentsDirectory();
-
     String path = join(documentsDirectory.path, databaseName);
 
-    var db =
-        await openDatabase(path, version: versionNumber, onCreate: _onCreate);
-    return db;
+    return await openDatabase(path, version: versionNumber);
   }
 
-  _onCreate(Database db, int intVersion) async {
+  _createDatabase() async {
+    Directory documentsDirectory = await getApplicationDocumentsDirectory();
+    String path = join(documentsDirectory.path, databaseName);
+
+    return await openDatabase(path, version: versionNumber, onCreate: _onCreateTable);
+  }
+
+  _onCreateTable(Database db, int intVersion) async {
     await db.execute("CREATE TABLE IF NOT EXISTS $tableMedicines ("
         " $colId INTEGER PRIMARY KEY AUTOINCREMENT, "
-        " $colTitle TEXT NOT NULL, "
+        " $colMedicineName TEXT NOT NULL, "
+        " $colTime TEXT NOT NULL, "
         " $colDescription TEXT"
         ")");
   }

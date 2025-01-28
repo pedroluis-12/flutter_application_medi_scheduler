@@ -7,9 +7,9 @@ class MediSchedulerFormViewmodel extends ChangeNotifier {
   final MediSchedulerFormRepository _mediSchedulerFormRepository =
       MediSchedulerFormRepository();
 
-  Future<void> saveForm(String title, String description) async {
+  Future<void> saveForm(String medicineName, String time, String description) async {
     MediSchedulerModel mediSchedulerForm =
-        MediSchedulerModel(title, description);
+        MediSchedulerModel(medicineName, time, description);
 
     try {
       await _mediSchedulerFormRepository
@@ -22,9 +22,9 @@ class MediSchedulerFormViewmodel extends ChangeNotifier {
     }
   }
 
-  Future<void> updateForm(int id, String title, String description) async {
+  Future<void> updateForm(int id, String medicineName, String time, String description) async {
     MediSchedulerModel mediSchedulerForm =
-        MediSchedulerModel(title, description, id: id);
+        MediSchedulerModel(medicineName, time, description, id: id);
     try {
       await _mediSchedulerFormRepository
           .updateMediSchedulerForm(mediSchedulerForm);
@@ -34,5 +34,9 @@ class MediSchedulerFormViewmodel extends ChangeNotifier {
         print(e);
       }
     }
+  }
+
+  Future<void> close() async {
+    await _mediSchedulerFormRepository.close();
   }
 }

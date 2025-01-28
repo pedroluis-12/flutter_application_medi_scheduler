@@ -26,4 +26,9 @@ class MediSchedulerFormRepository {
         where: '${MediSchedulerDatabaseHelper.colId} = ?',
         whereArgs: [model.id]);
   }
+
+  Future<void> close() async {
+    final db = await _databaseHelper.database;
+    await db.close();
+  }
 }

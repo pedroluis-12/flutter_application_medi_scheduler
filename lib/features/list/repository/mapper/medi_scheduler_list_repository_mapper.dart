@@ -7,7 +7,8 @@ class MediSchedulerListRepositoryMapper {
   }
 
   MediSchedulerModel _mapToModel(dynamic item) => MediSchedulerModel(
-      item['title'],
+      item['medicineName'],
+      item['time'],
       item['description'],
       id: item['id'],
     );
